@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>期末考试成绩计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        body {
+            width: 100%;
+            min-height: 100vh;
+            padding: 2vw;
+            background-color: #f8f9fa;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3vw 2vw;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            font-size: clamp(20px, 6vw, 32px);
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+        #modules-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .score-module {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem 1rem;
+            padding-right: 4rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background-color: #fafafa;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-shrink: 0;
+        }
+        .module-content {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+        .score-label {
+            font-size: clamp(14px, 4vw, 16px);
+            color: #4a5568;
+            flex-shrink: 0;
+        }
+        .module-name {
+            width: clamp(70px, 20vw, 100px);
+            min-width: 70px;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: clamp(14px, 4vw, 16px);
+            text-align: center;
+            background-color: white;
+            font-weight: 500;
+            color: #2d3748;
+        }
+        .ratio-input {
+            width: clamp(50px, 12vw, 70px);
+            min-width: 50px;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: clamp(14px, 4vw, 16px);
+            text-align: center;
+            background-color: white;
+        }
+        .ratio-text {
+            font-size: clamp(14px, 4vw, 16px);
+            color: #718096;
+        }
+        .btn-remove {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            width: clamp(36px, 8vw, 44px);
+            height: clamp(36px, 8vw, 44px);
+            min-width: 36px;
+            min-height: 36px;
+            line-height: 1;
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: clamp(16px, 4vw, 18px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+        }
+        .btn-remove:hover {
+            background-color: #fee2e2;
+        }
+        .type-radio-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .type-radio-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            min-width: 100px;
+            justify-content: center;
+        }
+        .type-radio-item:hover {
+            background-color: #f1f5f9;
+        }
+        .type-radio {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 1;
+        }
+        .radio-symbol {
+            font-size: clamp(16px, 4vw, 18px);
+            color: #cbd5e0;
+            transition: color 0.2s ease;
+        }
+        .type-radio:checked ~ .radio-symbol {
+            color: #2563eb;
+        }
+        .radio-label {
+            font-size: clamp(14px, 4vw, 16px);
+            color: #4a5568;
+        }
+        .score-input {
+            width: clamp(70px, 20vw, 100px);
+            min-width: 70px;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: clamp(14px, 4vw, 16px);
+            text-align: center;
+            background-color: white;
+            flex-shrink: 0;
+        }
+        .btn-add {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background-color: #ecfdf5;
+            color: #10b981;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: clamp(16px, 4.5vw, 18px);
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        .btn-add:hover {
+            background-color: #d1fae5;
+        }
+        .btn-calculate {
+            width: 100%;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #eff6ff;
+            color: #2563eb;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: clamp(16px, 5vw, 20px);
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .btn-calculate:hover {
+            background-color: #dbeafe;
+        }
+        .expect-score {
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .expect-score label {
+            font-size: clamp(16px, 4.5vw, 18px);
+            color: #4a5568;
+        }
+        .expect-score input {
+            width: clamp(70px, 20vw, 100px);
+            min-width: 70px;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: clamp(14px, 4vw, 16px);
+            text-align: center;
+        }
+        .expect-score.disabled input {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .warning {
+            color: #dc2626;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: clamp(14px, 4vw, 16px);
+            padding: 0.8rem;
+            border-radius: 8px;
+            background-color: #fef2f2;
+            display: none;
+            width: 100%;
+        }
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background-color: #eff6ff;
+            text-align: center;
+            font-size: clamp(16px, 4.5vw, 18px);
+            color: #2563eb;
+            font-weight: 500;
+            display: none;
+            width: 100%;
+        }
+        .result span {
+            font-weight: 700;
+            color: #1a56db;
+        }
+        @media (max-width: 320px) {
+            .score-module {
+                padding-right: 3rem;
+            }
+            .module-header {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .module-content {
+                width: 100%;
+                justify-content: flex-start;
+                padding-left: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>期末考试成绩计算器</h1>
+        <div id="modules-container">
+            <div class="score-module" data-module-id="0">
+                <div class="module-header">
+                    <input type="text" class="module-name" value="平时分" placeholder="模块名">
+                    <input type="number" class="ratio-input" value="20" min="1" max="99">
+                    <span class="ratio-text">%</span>
+                </div>
+                <div class="module-content">
+                    <div class="type-radio-group">
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_0_percent" name="type_0" class="type-radio" value="percent" checked>
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">百分制</span>
+                        </label>
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_0_ratio" name="type_0" class="type-radio" value="ratio">
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">占比分</span>
+                        </label>
+                    </div>
+                    <span class="score-label">分数：</span>
+                    <input type="number" class="score-input" placeholder="请输入" min="0">
+                </div>
+                <button class="btn-remove" onclick="removeModule(this)">-</button>
+            </div>
+            <div class="score-module" data-module-id="1">
+                <div class="module-header">
+                    <input type="text" class="module-name" value="作业分" placeholder="模块名">
+                    <input type="number" class="ratio-input" value="40" min="1" max="99">
+                    <span class="ratio-text">%</span>
+                </div>
+                <div class="module-content">
+                    <div class="type-radio-group">
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_1_percent" name="type_1" class="type-radio" value="percent" checked>
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">百分制</span>
+                        </label>
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_1_ratio" name="type_1" class="type-radio" value="ratio">
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">占比分</span>
+                        </label>
+                    </div>
+                    <span class="score-label">分数：</span>
+                    <input type="number" class="score-input" placeholder="请输入" min="0">
+                </div>
+                <button class="btn-remove" onclick="removeModule(this)">-</button>
+            </div>
+            <div class="score-module" data-module-id="2">
+                <div class="module-header">
+                    <input type="text" class="module-name" value="考试分" placeholder="模块名">
+                    <input type="number" class="ratio-input" value="40" min="1" max="99">
+                    <span class="ratio-text">%</span>
+                </div>
+                <div class="module-content">
+                    <div class="type-radio-group">
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_2_percent" name="type_2" class="type-radio" value="percent" checked>
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">百分制</span>
+                        </label>
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_2_ratio" name="type_2" class="type-radio" value="ratio">
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">占比分</span>
+                        </label>
+                    </div>
+                    <span class="score-label">分数：</span>
+                    <input type="number" class="score-input" placeholder="请输入" min="0">
+                </div>
+                <button class="btn-remove" onclick="removeModule(this)">-</button>
+            </div>
+        </div>
+        <button class="btn-add" onclick="addModule()">+ 添加成绩模块</button>
+        
+        <div class="expect-score" id="expect-score-container">
+            <label>期望最终分数：</label>
+            <input type="number" id="expect-score" placeholder="如 90" min="0" max="100">
+        </div>
+
+        <!-- 核心修复：确保按钮id和onclick绑定正确 -->
+        <button id="calculate-btn" class="btn-calculate">计算</button>
+        <div id="warning" class="warning"></div>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // 全局变量
+        let moduleIdCounter = 3;
+        const modulesContainer = document.getElementById('modules-container');
+        const warningEl = document.getElementById('warning');
+        const resultEl = document.getElementById('result');
+        const expectScoreContainer = document.getElementById('expect-score-container');
+        const expectScoreInput = document.getElementById('expect-score');
+        const calculateBtn = document.getElementById('calculate-btn');
+
+        // 核心修复：页面加载完成后强制绑定点击事件
+        window.onload = function() {
+            // 确保计算按钮点击事件绑定
+            calculateBtn.onclick = calculate;
+            // 初始化检查输入状态
+            checkInputStatus();
+        };
+
+        // 添加模块
+        function addModule() {
+            if (!modulesContainer) return;
+            const moduleId = moduleIdCounter++;
+            const newModule = document.createElement('div');
+            newModule.className = 'score-module';
+            newModule.dataset.moduleId = moduleId;
+            newModule.innerHTML = `
+                <div class="module-header">
+                    <input type="text" class="module-name" value="模块${moduleId}" placeholder="模块名">
+                    <input type="number" class="ratio-input" value="0" min="1" max="99">
+                    <span class="ratio-text">%</span>
+                </div>
+                <div class="module-content">
+                    <div class="type-radio-group">
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_${moduleId}_percent" name="type_${moduleId}" class="type-radio" value="percent" checked>
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">百分制</span>
+                        </label>
+                        <label class="type-radio-item">
+                            <input type="radio" id="radio_${moduleId}_ratio" name="type_${moduleId}" class="type-radio" value="ratio">
+                            <span class="radio-symbol">⊙</span>
+                            <span class="radio-label">占比分</span>
+                        </label>
+                    </div>
+                    <span class="score-label">分数：</span>
+                    <input type="number" class="score-input" placeholder="请输入" min="0">
+                </div>
+                <button class="btn-remove" onclick="removeModule(this)">-</button>
+            `;
+            modulesContainer.appendChild(newModule);
+            // 为新模块的分数输入框添加事件
+            newModule.querySelector('.score-input').addEventListener('input', checkInputStatus);
+            checkInputStatus();
+        }
+
+        // 删除模块
+        function removeModule(btn) {
+            if (!modulesContainer) return;
+            if (modulesContainer.children.length <= 1) {
+                showWarning('至少保留1个成绩模块');
+                return;
+            }
+            btn.parentElement.remove();
+            checkInputStatus();
+        }
+
+        // 显示警告
+        function showWarning(msg) {
+            if (!warningEl) return;
+            warningEl.textContent = msg;
+            warningEl.style.display = 'block';
+            resultEl.style.display = 'none';
+            setTimeout(() => {
+                if (warningEl) warningEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // 评级判断
+        function getRating(score) {
+            if (score >= 90 && score <= 100) return '优';
+            if (score >= 80 && score < 90) return '良';
+            if (score >= 70 && score < 80) return '中';
+            if (score >= 60 && score < 70) return '合格';
+            return '不合格';
+        }
+
+        // 检查输入状态，控制期望分数输入框
+        function checkInputStatus() {
+            if (!modulesContainer || !expectScoreContainer || !expectScoreInput) return;
+            const modules = modulesContainer.querySelectorAll('.score-module');
+            let unknownCount = 0;
+            modules.forEach(module => {
+                const score = module.querySelector('.score-input').value;
+                if (score === '') unknownCount++;
+            });
+            // 全填入状态：禁用期望分数
+            if (unknownCount === 0) {
+                expectScoreContainer.classList.add('disabled');
+                expectScoreInput.disabled = true;
+            } else {
+                expectScoreContainer.classList.remove('disabled');
+                expectScoreInput.disabled = false;
+            }
+        }
+
+        // 核心修复：计算函数 - 完全重写，确保无语法错误，逻辑清晰
+        function calculate() {
+            // 第一步：校验DOM元素是否存在
+            if (!modulesContainer || !warningEl || !resultEl) {
+                alert('页面元素加载失败，请刷新页面');
+                return;
+            }
+
+            // 重置结果和警告
+            warningEl.style.display = 'none';
+            resultEl.style.display = 'none';
+
+            const modules = modulesContainer.querySelectorAll('.score-module');
+            let totalRatio = 0;
+            let unknownCount = 0;
+            let unknownModule = null;
+            const moduleData = [];
+
+            // 第二步：收集并校验所有模块数据
+            for (let i = 0; i < modules.length; i++) {
+                const module = modules[i];
+                const nameEl = module.querySelector('.module-name');
+                const ratioEl = module.querySelector('.ratio-input');
+                const scoreEl = module.querySelector('.score-input');
+                const checkedRadio = module.querySelector('.type-radio:checked');
+
+                // 校验模块内元素是否存在
+                if (!nameEl || !ratioEl || !scoreEl || !checkedRadio) {
+                    showWarning('模块元素加载异常，请刷新页面');
+                    return;
+                }
+
+                const name = nameEl.value.trim() || `模块${i+1}`;
+                const ratio = parseFloat(ratioEl.value);
+                const type = checkedRadio.value;
+                const score = scoreEl.value;
+                const scoreNum = score === '' ? null : parseFloat(score);
+
+                // 校验占比
+                if (isNaN(ratio) || ratio < 1 || ratio > 99) {
+                    showWarning(`【${name}】占比必须是1-99的数字`);
+                    return;
+                }
+                totalRatio += ratio;
+
+                // 校验分数
+                if (scoreNum === null) {
+                    unknownCount++;
+                    unknownModule = { name, ratio, type };
+                } else {
+                    const maxScore = type === 'percent' ? 100 : ratio;
+                    if (scoreNum < 0 || scoreNum > maxScore) {
+                        showWarning(`【${name}】分数范围0-${maxScore}（${type === 'percent' ? '百分制' : '占比分'}）`);
+                        return;
+                    }
+                }
+
+                moduleData.push({ name, ratio, type, score: scoreNum });
+            }
+
+            // 校验占比总和
+            if (totalRatio !== 100) {
+                showWarning(`所有模块占比总和必须为100%，当前为${totalRatio}%`);
+                return;
+            }
+
+            // 第三步：自动判断逻辑分支
+            // 分支1：全填入（unknownCount=0）→ 计算最终成绩
+            if (unknownCount === 0) {
+                let finalScore = 0;
+                moduleData.forEach(data => {
+                    if (data.type === 'percent') {
+                        finalScore += (data.score / 100) * data.ratio;
+                    } else {
+                        finalScore += data.score;
+                    }
+                });
+                finalScore = Math.round(finalScore * 10) / 10; // 保留1位小数
+                const rating = getRating(finalScore);
+                resultEl.innerHTML = `您的最终成绩为<span>_${finalScore}_</span>分，评级为<span>_${rating}_</span>`;
+                resultEl.style.display = 'block';
+                return;
+            }
+
+            // 分支2：知二求一（unknownCount=1）→ 计算所需分数
+            if (unknownCount === 1) {
+                // 校验期望分数
+                const expectScore = parseFloat(expectScoreInput.value);
+                if (isNaN(expectScore) || expectScore < 0 || expectScore > 100) {
+                    showWarning('知二求一模式需填写0-100的期望最终分数');
+                    return;
+                }
+
+                // 计算已知模块总贡献
+                let knownTotal = 0;
+                moduleData.forEach(data => {
+                    if (data.score !== null) {
+                        knownTotal += data.type === 'percent' ? (data.score / 100) * data.ratio : data.score;
+                    }
+                });
+
+                // 计算未知模块需要的分数
+                const needContribution = expectScore - knownTotal;
+                let needScore = 0;
+                const typeText = unknownModule.type === 'percent' ? '百分制' : '占比分';
+
+                if (unknownModule.type === 'percent') {
+                    needScore = (needContribution / unknownModule.ratio) * 100;
+                    if (needScore < 0 || needScore > 100) {
+                        resultEl.textContent = `按${typeText}计算，【${unknownModule.name}】需${needScore.toFixed(1)}分（超出0-100范围，无法达成${expectScore}分）`;
+                        resultEl.style.display = 'block';
+                        return;
+                    }
+                } else {
+                    needScore = needContribution;
+                    if (needScore < 0 || needScore > unknownModule.ratio) {
+                        resultEl.textContent = `按${typeText}计算，【${unknownModule.name}】需${needScore.toFixed(1)}分（超出0-${unknownModule.ratio}范围，无法达成${expectScore}分）`;
+                        resultEl.style.display = 'block';
+                        return;
+                    }
+                }
+
+                resultEl.textContent = `按${typeText}计算，【${unknownModule.name}】需${needScore.toFixed(1)}分，即可达成${expectScore}分。`;
+                resultEl.style.display = 'block';
+                return;
+            }
+
+            // 分支3：其他情况
+            showWarning(`请仅保留1个模块分数为空（当前未知${unknownCount}个），或填写所有模块分数计算最终成绩`);
+        }
+
+        // 为所有现有分数输入框添加事件
+        document.querySelectorAll('.score-input').forEach(input => {
+            input.addEventListener('input', checkInputStatus);
+        });
+    </script>
+</body>
+</html>
